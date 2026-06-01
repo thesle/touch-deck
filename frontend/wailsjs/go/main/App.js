@@ -10,6 +10,10 @@ export function GetImageBase64(arg1) {
   return window['go']['main']['App']['GetImageBase64'](arg1);
 }
 
+export function ListConfigImages() {
+  return window['go']['main']['App']['ListConfigImages']();
+}
+
 export function LoadConfig() {
   return window['go']['main']['App']['LoadConfig']();
 }

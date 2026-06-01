@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -302,4 +303,31 @@ func (a *App) GetImageBase64(path string) (string, error) {
 
 	encoded := base64.StdEncoding.EncodeToString(data)
 	return fmt.Sprintf("data:%s;base64,%s", mimeType, encoded), nil
+}
+
+// ListConfigImages returns a list of absolute paths of all images stored in the touchdeck configuration
+func (a *App) ListConfigImages() ([]string, error) {
+	imagesDir, err := a.getImagesDir()
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := os.ReadDir(imagesDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var imagePaths []string
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		// Match typical image extensions
+		ext := strings.ToLower(filepath.Ext(file.Name()))
+		if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp" || ext == ".svg" {
+			imagePaths = append(imagePaths, filepath.Join(imagesDir, file.Name()))
+		}
+	}
+
+	return imagePaths, nil
 }

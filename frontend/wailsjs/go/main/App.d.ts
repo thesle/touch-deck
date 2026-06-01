@@ -6,6 +6,8 @@ export function CopyImageToConfig(arg1:string):Promise<string>;
 
 export function GetImageBase64(arg1:string):Promise<string>;
 
+export function ListConfigImages():Promise<Array<string>>;
+
 export function LoadConfig():Promise<main.Config>;
 
 export function RunCommandAsync(arg1:string):Promise<void>;

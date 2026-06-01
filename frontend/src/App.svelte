@@ -7,7 +7,8 @@
     RunCommandSync, 
     SelectImage, 
     CopyImageToConfig,
-    GetImageBase64
+    GetImageBase64,
+    ListConfigImages
   } from '../wailsjs/go/main/App.js';
 
   // State
@@ -26,6 +27,27 @@
   let editBgColor = '#1f2937';
   let editFontColor = '#ffffff';
   let editFontSize = 0; // -2 to +2 font size modifier
+  let existingImages = []; // List of existing image absolute paths
+
+  async function loadExistingImages() {
+    try {
+      existingImages = await ListConfigImages() || [];
+    } catch (err) {
+      console.error("Failed to load existing images:", err);
+    }
+  }
+
+  function getFriendlyImageName(path) {
+    if (!path) return '';
+    const parts = path.split('/');
+    const filename = parts[parts.length - 1];
+    // Find the first underscore to strip the timestamp prefix
+    const firstUnderscore = filename.indexOf('_');
+    if (firstUnderscore !== -1) {
+      return filename.slice(firstUnderscore + 1);
+    }
+    return filename;
+  }
 
   function getFontSizeClass(offset) {
     switch (offset) {
@@ -60,6 +82,7 @@
 
   onMount(async () => {
     await loadAppConfig();
+    await loadExistingImages();
   });
 
   async function loadAppConfig() {
@@ -266,6 +289,7 @@
       // Copy image to TouchDeck's config directory
       const copiedPath = await CopyImageToConfig(selectedPath);
       editBgImage = copiedPath;
+      await loadExistingImages();
     } catch (err) {
       console.error("Error picking image:", err);
     }
@@ -627,17 +651,31 @@
             <!-- Background Image -->
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5" for="image">Background Image</label>
+              
+              <!-- Dropdown of existing images -->
+              <div class="mb-2">
+                <select
+                  class="w-full bg-[#1f2937] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  bind:value={editBgImage}
+                >
+                  <option value="">-- No Image / Select Existing --</option>
+                  {#each existingImages as imgPath}
+                    <option value={imgPath}>{getFriendlyImageName(imgPath)}</option>
+                  {/each}
+                </select>
+              </div>
+
               <div class="flex gap-2">
                 <input
                   id="image"
                   type="text"
-                  bind:value={editBgImage}
+                  value={editBgImage ? getFriendlyImageName(editBgImage) : ""}
                   disabled
                   placeholder="No background image chosen"
-                  class="flex-grow bg-[#1f2937]/50 border border-[#374151] rounded-lg px-3 py-2 text-xs text-gray-400 select-all"
+                  class="flex-grow bg-[#1f2937]/30 border border-[#374151] rounded-lg px-3 py-2 text-xs text-gray-400 select-all font-mono"
                 />
                 <button
-                  class="px-3 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white rounded-lg text-xs font-bold transition-all"
+                  class="px-3 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white rounded-lg text-xs font-bold transition-all whitespace-nowrap"
                   on:click={handleSelectImage}
                 >
                   Choose File

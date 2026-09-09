@@ -1,16 +1,15 @@
-.PHONY: all dev build clean
+.PHONY: all build run clean
 
 all: build
 
-dev:
-	@echo "--- Running TouchDeck in Dev Mode (WebKitGTK 4.1) ---"
-	wails dev -tags webkit2_41
-
 build:
-	@echo "--- Building TouchDeck Production Binary (WebKitGTK 4.1) ---"
-	wails build -tags webkit2_41
-	@echo "TouchDeck binary created at: build/bin/touch-scripts"
+	@echo "--- Building TouchDeck (Gio) ---"
+	go build -o build/bin/touchdeck .
+	@echo "TouchDeck binary created at: build/bin/touchdeck"
+
+run:
+	go run .
 
 clean:
-	@echo "--- Cleaning Build Directories ---"
-	rm -rf build/bin/touch-scripts
+	@echo "--- Cleaning Build Output ---"
+	rm -rf build/bin/touchdeck

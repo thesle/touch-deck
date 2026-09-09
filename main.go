@@ -1,36 +1,57 @@
+// Command touchdeck is the Gio entry point for TouchDeck.
+//
+// This replaces the previous Wails entry point: the //go:embed of
+// frontend/dist, the embed import, and the wails.Run(...) call are all gone
+// (Requirements 2.4, 1.1). main() now builds the framework-agnostic core
+// Backend, loads the configuration, constructs the in-memory UI AppState, and
+// hands control to the Gio_Renderer event loop in internal/ui (Requirement
+// 1.4). main.go is intentionally thin — the render loop lives in
+// internal/ui/render.go.
 package main
 
 import (
-	"embed"
+	"log"
+	"os"
 
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"gioui.org/app"
+
+	"touchdeck/internal/core"
+	"touchdeck/internal/ui"
 )
 
-//go:embed all:frontend/dist
-var assets embed.FS
-
 func main() {
-	// Create an instance of the app structure
-	app := NewApp()
+	// Backend performs all side effects (config load/save, command execution,
+	// image handling). It has no Gio dependency.
+	backend := core.New()
 
-	// Create application with options
-	err := wails.Run(&options.App{
-		Title:  "touchdeck",
-		Width:  1024,
-		Height: 768,
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-		Bind: []interface{}{
-			app,
-		},
-	})
-
+	// LoadConfig returns a usable default when no file exists; a genuine
+	// read/decode error is non-fatal here — log it and continue with whatever
+	// Config was returned so the app stays usable (design: Error Handling).
+	cfg, err := backend.LoadConfig()
 	if err != nil {
-		println("Error:", err.Error())
+		log.Printf("touchdeck: load config: %v (continuing with returned config)", err)
 	}
+
+	// AppState is the single source of UI truth held between frames. The Deck
+	// view is active on start (Requirement 1.6).
+	state := ui.NewAppState(backend, cfg)
+	state.Textures = ui.NewTextureCache()
+
+	go func() {
+		// v0.10.2 window construction: new(app.Window) then w.Option(...).
+		// There is no app.NewWindow in this version. The window starts
+		// windowed with a title bar (Requirements 1.6, 7.1); full-screen is a
+		// later task.
+		w := new(app.Window)
+		w.Option(
+			app.Title("TouchDeck"),
+			app.Size(1024, 768),
+		)
+		if err := ui.Run(w, state); err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
+	}()
+
+	app.Main()
 }

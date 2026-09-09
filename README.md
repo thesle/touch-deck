@@ -1,16 +1,35 @@
-# README
+# TouchDeck
 
 ## About
 
-This is the official Wails Svelte template.
-
-## Live Development
-
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+TouchDeck is a native desktop application built with [Gio](https://gioui.org/).
+It presents a configurable grid of touch buttons that run shell commands, with a
+built-in configuration editor. Config and images are stored under
+`~/.config/touchdeck/`.
 
 ## Building
 
-To build a redistributable, production mode package, use `wails build`.
+Build the binary with the Makefile or the Go toolchain directly:
+
+```sh
+make build      # produces build/bin/touchdeck
+# or
+go build .
+```
+
+## Running
+
+```sh
+make run
+# or
+go run .
+```
+
+## Linux build dependencies
+
+Gio and the native file dialog need the following system packages:
+
+- `libvulkan-dev`
+- `libxkbcommon-x11-dev`
+- `libx11-xcb-dev`
+- GTK development libraries (for the native file-open dialog)

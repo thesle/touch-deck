@@ -1,0 +1,1023 @@
+{
+  "pbtResults": {
+    "2.5 Write property test for configuration round-trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1788916533177
+    },
+    "2.6 Write property test for legacy migration membership": {
+      "status": "passed",
+      "lastRunTimestamp": 1788916534137
+    },
+    "3.3 Write property test for image copy content and naming": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918451738
+    },
+    "3.4 Write property test for image listing extension filter": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918452473
+    },
+    "4.3 Write property test for grid-size prune invariant": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918751735
+    },
+    "4.4 Write property test for slot-swap self-inverse": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918752676
+    },
+    "4.5 Write property test for pagination wrap": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918754085
+    },
+    "4.6 Write property test for button-order uniqueness per page": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918755032
+    },
+    "4.7 Write property test for slot-write field/order preservation": {
+      "status": "passed",
+      "lastRunTimestamp": 1788918756136
+    }
+  },
+  "executionHistory": {
+    "1.1 Update `go.mod` for Gio and native dialog": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355456
+      },
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914367616
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915136368
+      }
+    ],
+    "1.2 Create the `internal/core` and `internal/ui` package skeletons": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355538
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915140621
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915218350
+      }
+    ],
+    "2.1 Move the persisted data models into `internal/core`": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355604
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915223617
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915300661
+      }
+    ],
+    "2.2 Implement `ConfigPath`/`ImagesDir` with a testable config-root seam": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355653
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915224566
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915385439
+      }
+    ],
+    "2.3 Implement `LoadConfig` with default creation and legacy migration": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355702
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915526676
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915617597
+      }
+    ],
+    "2.4 Implement `SaveConfig`": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355739
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915462282
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915525869
+      }
+    ],
+    "3.1 Port the Command_Runner": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355789
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915225478
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915454814
+      }
+    ],
+    "3.2 Port the Image_Manager copy/list and replace `SelectImage` with the native dialog": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355838
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788916578758
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918170317
+      }
+    ],
+    "4.1 Implement grid-math and content-resolution helpers": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355900
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788916577825
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918169435
+      }
+    ],
+    "4.2 Implement pagination and slot-mutation helpers": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355926
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918177000
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918485670
+      }
+    ],
+    "5. Checkpoint - core package complete and tested": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914355966
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918862553
+      }
+    ],
+    "6.1 Define the in-memory UI models in `internal/ui`": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356001
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918875498
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788919108039
+      }
+    ],
+    "6.2 Implement the TextureCache": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356026
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918876538
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788919108948
+      }
+    ],
+    "6.3 Rewrite `main.go` and implement the Renderer event/render loop": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356071
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788919118024
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921618838
+      }
+    ],
+    "6.4 [Manual verification] Confirm the skeleton launches": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356105
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921722946
+      }
+    ],
+    "7. Checkpoint - runnable Gio skeleton": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356142
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921727523
+      }
+    ],
+    "8.1 Render the deck grid and resolve slot content": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356191
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921737375
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788922033232
+      }
+    ],
+    "8.2 [Manual verification] Verify deck rendering fidelity": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356238
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788925102207
+      }
+    ],
+    "9.1 Implement tap execution and tactile flash": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356271
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788925123455
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788926253451
+      }
+    ],
+    "9.2 Implement pagination controls": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356309
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788926254086
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929297797
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788931431056
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938777340
+      }
+    ],
+    "9.3 [Manual verification] Verify tap flash and pagination": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356352
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929297170
+      }
+    ],
+    "10.1 Implement `toggleFullscreen` with F11 and an on-screen control": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356384
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788922049108
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788922421257
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788923253927
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788925093084
+      }
+    ],
+    "10.2 [Manual verification] Verify full-screen behavior": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356421
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788925094110
+      }
+    ],
+    "11.1 Implement long-press and right-click detection": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356465
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994330894
+      }
+    ],
+    "11.2 Implement the Context_Menu overlay and actions": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356493
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994330178
+      }
+    ],
+    "11.3 [Manual verification] Verify context-menu gestures and actions": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356541
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994328851
+      }
+    ],
+    "12. Checkpoint - Deck_View fully functional": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356589
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929333083
+      }
+    ],
+    "13.1 Implement the ColorPicker widget": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356643
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788919119213
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921619763
+      }
+    ],
+    "13.2 Implement the FontSizeSelector widget": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356676
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788919119910
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938210215
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938774913
+      }
+    ],
+    "14.1 Implement the split-pane layout and live grid preview": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356710
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788922426921
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788922666746
+      }
+    ],
+    "14.2 Implement rows/cols adjusters with prune-and-save": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356749
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929341506
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929746887
+      }
+    ],
+    "14.3 Implement the page selector and slot selection": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356783
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929747780
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929966864
+      }
+    ],
+    "14.4 [Manual verification] Verify grid/page/selection interactions": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356818
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938778251
+      }
+    ],
+    "15.1 Implement the editor form fields": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356856
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929967840
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788930248582
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788931431744
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938775825
+      }
+    ],
+    "15.2 Implement save and clear": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356899
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788930247699
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788930444639
+      }
+    ],
+    "15.3 [Manual verification] Verify editor fields, save, clear, and image flow": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356937
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938778991
+      }
+    ],
+    "16.1 Implement the move controls": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914356972
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938795047
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788993297530
+      }
+    ],
+    "16.2 Implement copy/paste of editor settings": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357013
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938796527
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788993298800
+      }
+    ],
+    "16.3 Implement the test-run panel": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357057
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938797171
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788993299723
+      }
+    ],
+    "16.4 [Manual verification] Verify move, copy/paste, and test-run states": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357102
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788993300575
+      }
+    ],
+    "17. Checkpoint - Config_View fully functional": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357141
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788993313953
+      }
+    ],
+    "18.1 Update the Makefile and remove `wails.json`": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357181
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994351618
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994539809
+      }
+    ],
+    "18.2 Verify no Wails/WebView imports remain and the Linux build succeeds": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357216
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994539044
+      }
+    ],
+    "19.1 Delete the frontend, generated bindings, and Node tooling": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357267
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994557518
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994690384
+      }
+    ],
+    "20. Final checkpoint - migration complete": [
+      {
+        "executionId": "723c33f2-1c81-4032-b807-648171edb784",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788914357301
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994831468
+      }
+    ],
+    "1. Migrate module dependencies and create package skeleton": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915218384
+      }
+    ],
+    "2. Extract the Config_Store into `internal/core`": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915617651
+      }
+    ],
+    "2.5 Write property test for configuration round-trip": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915633098
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788916563129
+      }
+    ],
+    "2.6 Write property test for legacy migration membership": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915634491
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788916564079
+      }
+    ],
+    "2.7 Write unit tests for Config_Store": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788915635331
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788916565108
+      }
+    ],
+    "3. Extract the Command_Runner and Image_Manager into `internal/core`": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918170353
+      }
+    ],
+    "3.3 Write property test for image copy content and naming": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918178436
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918486631
+      }
+    ],
+    "3.4 Write property test for image listing extension filter": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918179309
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918488075
+      }
+    ],
+    "3.5 Write integration tests for Command_Runner and image copy": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918180282
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918488860
+      }
+    ],
+    "4. Extract pure state helpers into `internal/core`": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918485719
+      }
+    ],
+    "4.8 Write unit tests for pure state helpers": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918496921
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918824811
+      }
+    ],
+    "4.7 Write property test for slot-write field/order preservation": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918499952
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918823413
+      }
+    ],
+    "4.6 Write property test for button-order uniqueness per page": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918500273
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918822478
+      }
+    ],
+    "4.5 Write property test for pagination wrap": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918500551
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918827171
+      }
+    ],
+    "4.4 Write property test for slot-swap self-inverse": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918501412
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918825779
+      }
+    ],
+    "4.3 Write property test for grid-size prune invariant": [
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918502617
+      },
+      {
+        "executionId": "1f89f3c8-dbec-4b10-97ef-4b872785d37f",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788918827849
+      }
+    ],
+    "13. Implement reusable Config_View widgets": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921619822
+      }
+    ],
+    "6. Build the Gio app skeleton and wire it to `internal/core`": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788921723023
+      }
+    ],
+    "10. Implement the full-screen toggle": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788925094189
+      }
+    ],
+    "8. Implement Deck_View rendering": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788925102279
+      }
+    ],
+    "9. Implement Deck_View interaction": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788929297833
+      }
+    ],
+    "14. Implement Config_View grid, pages, and slot selection": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938778334
+      }
+    ],
+    "15. Implement Config_View editor fields, save, and clear": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788938779040
+      }
+    ],
+    "16. Implement Config_View move, copy/paste, and test-run": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788993300627
+      }
+    ],
+    "11. Implement the Context_Menu on the Deck_View": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994330951
+      }
+    ],
+    "18. Migrate the build system and remove Wails config": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994539867
+      }
+    ],
+    "19. Remove the Svelte/Tailwind frontend and Node tooling": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994690446
+      }
+    ],
+    "13.3 Write unit tests for widget value parsing": [
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788994850641
+      },
+      {
+        "executionId": "c98b0ce3-249d-44b1-9614-d9c6a1f3e7e3",
+        "chatSessionId": "sess_9f1f8cf1-dac2-4d09-9ca3-37caf66d9134",
+        "timestamp": 1788995092933
+      }
+    ]
+  }
+}

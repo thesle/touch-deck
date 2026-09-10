@@ -45,7 +45,7 @@ func main() {
 		w := new(app.Window)
 		w.Option(
 			app.Title("TouchDeck"),
-			app.Size(1024, 768),
+			app.Size(1024, 600),
 		)
 		if err := ui.Run(w, state); err != nil {
 			log.Fatal(err)

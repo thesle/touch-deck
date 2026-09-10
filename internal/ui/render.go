@@ -147,8 +147,12 @@ func (r *Renderer) layout(gtx layout.Context) layout.Dimensions {
 		r.switchView(ViewConfig)
 	}
 	// The on-screen full-screen control toggles the same way F11 does
-	// (Requirements 7.4, 7.5).
-	if r.fsBtn.Clicked(gtx) {
+	// (Requirements 7.4, 7.5). It is only OFFERED on the Deck view (see
+	// layoutHeader) — full-screen hides the header, so it must not be entered
+	// from the header-based Config view. We still drain the click every frame
+	// to keep the clickable consistent, but only act on it while on Deck.
+	fsClicked := r.fsBtn.Clicked(gtx)
+	if fsClicked && r.state.View == ViewDeck {
 		r.toggleFullscreen()
 	}
 
@@ -255,7 +259,9 @@ func (r *Renderer) toggleFullscreen() {
 
 // layoutHeader draws the top bar with the "Deck"/"Config" buttons and the
 // full-screen control. The button for the active view is drawn in the theme's
-// contrast color so the current view is obvious. Enhancement 7: the header is
+// contrast color so the current view is obvious. The Fullscreen control is only
+// shown on the Deck view — full-screen hides the header, so it must not be
+// entered from the header-based Config view. Enhancement 7: the header is
 // only laid out when NOT full-screen (see layout); while full-screen it is
 // hidden so the active view fills the whole window, and the user returns to
 // windowed mode via F11 or the context menu's Fullscreen / Exit Fullscreen item.
@@ -287,6 +293,14 @@ func (r *Renderer) layoutHeader(gtx layout.Context) layout.Dimensions {
 			// Spacer pushes the full-screen control to the right edge.
 			layout.Flexed(1, layout.Spacer{}.Layout),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				// The Fullscreen control is only offered on the Deck view.
+				// Full-screen hides the header, and Config is a header-based
+				// editing view, so entering full-screen from Config would leave
+				// the user with no on-screen navigation. On Config we render
+				// nothing here.
+				if r.state.View != ViewDeck {
+					return layout.Dimensions{}
+				}
 				// Label reflects the current mode so the control doubles as the
 				// return-to-windowed control while full-screen (Req 7.5).
 				label := "Fullscreen"

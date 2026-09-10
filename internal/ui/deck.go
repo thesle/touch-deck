@@ -1265,8 +1265,21 @@ func (r *Renderer) layoutMenuItem(gtx layout.Context, btn *widget.Clickable, lab
 // it guards pagination slots, but Menu.Slot is never a pagination slot (the menu
 // is suppressed on those). The View switch happens BEFORE selectSlot so the
 // editor pane is showing when the slot loads.
+//
+// UX (Enhancement 7 follow-up): if the app is in full-screen when Edit is
+// picked, this exits full-screen first. Both Deck and Config hide the header
+// while full-screen, so switching to Config in full-screen would strand the
+// user with no on-screen way back to the Deck (only the F11 key). Exiting
+// full-screen restores the header's Deck/Config buttons.
 func (r *Renderer) menuEdit() {
 	slot := r.state.Menu.Slot
+	// UX (Enhancement 7 follow-up): if we are in full-screen, exit it first.
+	// Both Deck and Config hide the header while full-screen, so landing on
+	// Config in full-screen would leave no on-screen way back to the Deck
+	// (only F11). Exiting restores the header's Deck/Config buttons.
+	if r.state.Fullscreen {
+		r.toggleFullscreen()
+	}
 	r.state.View = ViewConfig
 	// Clear any stale selection first (switchView normally does this on a header
 	// switch; here we bypass switchView to keep the slot we are about to select).

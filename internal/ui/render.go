@@ -81,13 +81,16 @@ type Renderer struct {
 	deck deckState
 }
 
-// NewRenderer builds a Renderer bound to state. material.NewTheme() in Gio
-// v0.10.2 takes no arguments — it bundles the gofont collection and a default
-// text.Shaper, so no separate font collection is required.
+// NewRenderer builds a Renderer bound to state. Enhancement 10: instead of a
+// bare material.NewTheme() (which bundles only the monochrome gofont collection
+// and a default text.Shaper), we build the theme via newThemeWithEmoji, whose
+// text.Shaper carries a Noto Color Emoji fallback face. That lets tile labels
+// render color emoji (e.g. 📱) through the standard material.Label path — see
+// theme.go for the rationale (the label paint loop calls shaper.Bitmaps()).
 func NewRenderer(state *AppState) *Renderer {
 	return &Renderer{
 		state:     state,
-		th:        material.NewTheme(),
+		th:        newThemeWithEmoji(),
 		windowedW: defaultWindowedW,
 		windowedH: defaultWindowedH,
 	}

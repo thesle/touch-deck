@@ -222,6 +222,15 @@ type configState struct {
 	// lazily built once, mirroring the other constructor-backed widgets.
 	cfgTheme *material.Theme
 
+	// pickerTheme is a Config_View-private material.Theme used ONLY for the two
+	// gio-x color pickers, rendered as a LIGHT CARD. The library draws its hex
+	// field over a light (~#e6e6e6) box and renders the hex text (plus the "#"
+	// prefix, slider labels and R/G/B/A value digits) in the theme's Fg; the dark
+	// cfgTheme Fg made that text unreadable (white-on-white). pickerTheme uses a
+	// DARK Fg on that light surface so every picker text element is readable.
+	// Built lazily once by ensurePickerTheme.
+	pickerTheme *material.Theme
+
 	// saveErr holds the most recent save/clear persistence error message, or ""
 	// when the last write succeeded (Requirement 10.8, refined). When non-empty
 	// it is rendered as a red line below the action buttons so the user knows the
@@ -832,7 +841,10 @@ func (r *Renderer) ensureEditorWidgets() {
 // and other views keep their normal appearance.
 func (r *Renderer) ensureCfgTheme() *material.Theme {
 	if r.cfg.cfgTheme == nil {
-		th := material.NewTheme()
+		// Enhancement 10: build the theme via newThemeWithEmoji so the config
+		// pane's preview labels also render color emoji (they share the one
+		// shared emoji shaper with the deck theme; only the palette differs).
+		th := newThemeWithEmoji()
 		th.Palette.Fg = cfgThemeFg
 		th.Palette.Bg = cfgThemeBg
 		th.Palette.ContrastBg = cfgThemeContrastBg
@@ -840,6 +852,43 @@ func (r *Renderer) ensureCfgTheme() *material.Theme {
 		r.cfg.cfgTheme = th
 	}
 	return r.cfg.cfgTheme
+}
+
+// ensurePickerTheme returns a theme for the gio-x colorpicker rendered as a
+// LIGHT CARD. The library draws its hex field over a light (~#e6e6e6) box and
+// uses the theme Fg for the hex text, the "#" prefix, slider labels and value
+// digits; the dark cfgTheme Fg made the hex text unreadable (white-on-white).
+// A dark Fg on the light card makes every text element readable. It reuses the
+// shared emoji shaper (newThemeWithEmoji) so no font behavior changes.
+func (r *Renderer) ensurePickerTheme() *material.Theme {
+	if r.cfg.pickerTheme == nil {
+		th := newThemeWithEmoji()
+		th.Palette.Fg = color.NRGBA{R: 0x11, G: 0x18, B: 0x27, A: 0xff} // near-black text
+		th.Palette.Bg = color.NRGBA{R: 0xe6, G: 0xe6, B: 0xe6, A: 0xff} // light card
+		th.Palette.ContrastBg = cfgThemeContrastBg                      // keep the blue slider accent
+		r.cfg.pickerTheme = th
+	}
+	return r.cfg.pickerTheme
+}
+
+// layoutPickerCard draws a light rounded card behind the gio-x colorpicker so
+// its hex field / slider labels (drawn in the picker theme's dark Fg) are
+// readable. Mirrors layoutFieldBox but with a light fill (the library expects
+// a light surface for its hex box).
+func (r *Renderer) layoutPickerCard(gtx layout.Context, w layout.Widget) layout.Dimensions {
+	radius := gtx.Dp(unit.Dp(4))
+	cardFill := color.NRGBA{R: 0xe6, G: 0xe6, B: 0xe6, A: 0xff}
+	cardBorder := cfgFieldBorder
+	return widget.Border{Color: cardBorder, Width: unit.Dp(1), CornerRadius: unit.Dp(4)}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		macro := op.Record(gtx.Ops)
+		dims := layout.UniformInset(unit.Dp(8)).Layout(gtx, w)
+		call := macro.Stop()
+		rr := clip.UniformRRect(image.Rectangle{Max: dims.Size}, radius)
+		defer rr.Push(gtx.Ops).Pop()
+		paint.Fill(gtx.Ops, cardFill)
+		call.Add(gtx.Ops)
+		return dims
+	})
 }
 
 // layoutFieldBox draws a visible, rounded input-box background (a cfgFieldBg fill
@@ -1486,11 +1535,14 @@ func (r *Renderer) fieldTileColor(gtx layout.Context) layout.Dimensions {
 		}),
 		layout.Rigid(layout.Spacer{Height: unit.Dp(4)}.Layout),
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			// The ColorPicker's internal hex editor uses the theme's Fg, so
-			// passing cfgTheme makes its text readable on the dark pane (Issue 2).
-			// The box gives the hex field a visible input affordance too.
-			return r.layoutFieldBox(gtx, func(gtx layout.Context) layout.Dimensions {
-				return r.cfg.bgColor.Layout(gtx, r.ensureCfgTheme(), "#1f2937")
+			// Render the picker on a LIGHT card with a DARK-Fg theme so all of the
+			// library's text (hex field, "#", slider labels, value digits) is
+			// dark-on-light and readable (Issue 2). Pass an EMPTY label so the
+			// picker does not show a misleading static "old" hex value in addition
+			// to its editable hex field (Issue 1); the "Tile Color" caption above
+			// already names the field.
+			return r.layoutPickerCard(gtx, func(gtx layout.Context) layout.Dimensions {
+				return r.cfg.bgColor.Layout(gtx, r.ensurePickerTheme(), "")
 			})
 		}),
 	)
@@ -1504,8 +1556,10 @@ func (r *Renderer) fieldTextColor(gtx layout.Context) layout.Dimensions {
 		}),
 		layout.Rigid(layout.Spacer{Height: unit.Dp(4)}.Layout),
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return r.layoutFieldBox(gtx, func(gtx layout.Context) layout.Dimensions {
-				return r.cfg.fontColor.Layout(gtx, r.ensureCfgTheme(), "#ffffff")
+			// Same LIGHT-card + DARK-Fg treatment and EMPTY label as the tile
+			// picker (Issues 1 & 2); the "Text Color" caption above names the field.
+			return r.layoutPickerCard(gtx, func(gtx layout.Context) layout.Dimensions {
+				return r.cfg.fontColor.Layout(gtx, r.ensurePickerTheme(), "")
 			})
 		}),
 	)

@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"gioui.org/f32"
+	"gioui.org/font"
 	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -105,6 +106,11 @@ type deckState struct {
 	editMenuBtn  widget.Clickable
 	copyMenuBtn  widget.Clickable
 	pasteMenuBtn widget.Clickable
+	// fsMenuBtn backs the Fullscreen / Exit Fullscreen context-menu item
+	// (Enhancement 7). Because the header is hidden while full-screen, this
+	// menu item is the user's escape hatch back to windowed mode; it is drawn
+	// on every context menu (content and empty slots) and always enabled.
+	fsMenuBtn    widget.Clickable
 	menuBackdrop widget.Clickable
 
 	// --- Deck grid geometry for Context_Menu positioning (bug fix) ---
@@ -117,17 +123,33 @@ type deckState struct {
 	// Menu.Position made the panel always render near the deck's top-left instead
 	// of under the clicked slot.
 	//
-	// To convert to deck space we capture the deck's grid geometry each frame at
-	// the top of layoutDeck: deckSize is gtx.Constraints.Max (the full grid
-	// area), and deckRows/deckCols/deckGap are the row/column counts and the
-	// inter-tile gap in px. Because the grid is an equal-sized rows×cols layout
-	// filling the deck area with fixed gaps, layoutContextMenu can compute any
-	// slot's on-screen rectangle from its index and anchor the panel there. This
-	// avoids threading each tile's offset through the per-slot pointer handler.
+	// To convert to deck space we capture the deck's grid geometry each frame
+	// INSIDE the outer inset (Enhancement 1): deckSize is the inset content size
+	// (gtx.Constraints.Max as seen inside the UniformInset closure), and
+	// deckRows/deckCols/deckGap are the row/column counts and the inter-tile gap
+	// in px. deckInset records the outer padding in px. Because the grid is an
+	// equal-sized rows×cols layout filling the INNER area with fixed gaps,
+	// slotOrigin computes a slot's origin in inner-space and ADDS deckInset to
+	// return it in the OUTER deck space, which is the space layoutContextMenu /
+	// layoutMenuPanel offset within. This avoids threading each tile's offset
+	// through the per-slot pointer handler while keeping the menu anchored under
+	// the clicked slot despite the inset.
 	deckSize image.Point
 	deckRows int
 	deckCols int
 	deckGap  int
+
+	// deckInset is the outer padding (in px) applied around the whole grid
+	// (Enhancement 1, deckOuterInsetDp). The grid is laid out INSIDE a
+	// layout.UniformInset, so tile origins are shifted right/down by this
+	// amount relative to the deck's full area. deckSize above is captured as
+	// the INNER (post-inset) content size, so slotOrigin computes cell origins
+	// in inner-space and then ADDS deckInset to return coordinates in the
+	// OUTER deck space — the same space layoutContextMenu / layoutMenuPanel's
+	// op.Offset operates in (layoutContextMenu is called on the full-area gtx,
+	// outside the inset). This keeps the menu anchored under the clicked slot
+	// even with the inset present.
+	deckInset int
 }
 
 // longPressThreshold is how long a stationary primary press must be held before
@@ -186,8 +208,17 @@ var (
 )
 
 const (
-	// tileGapDp is the gap between adjacent tiles, matching the Svelte gap-4.
-	tileGapDp = 8
+	// tileGapDp is the gap between adjacent tiles (Enhancement 1). Widened from
+	// the original 8 to round(8 × 1.7) = 14 so adjacent tiles read as more
+	// clearly separated. It feeds the row/cell Spacers in layoutDeck/
+	// layoutDeckRow AND the `gap` value captured for slotOrigin, so the
+	// context-menu geometry stays consistent with the actual spacing.
+	tileGapDp = 14
+	// deckOuterInsetDp pads the whole deck grid away from the window edges
+	// (Enhancement 1) so tiles are not flush to the frame, matching the config
+	// preview's padding. See layoutDeck for how this inset is reconciled with
+	// the context-menu geometry (deckState.deckInset).
+	deckOuterInsetDp = 16
 	// tileRadiusDp is the tile corner radius (~ Tailwind rounded-2xl).
 	tileRadiusDp = 12
 	// tileInsetDp pads the label away from the tile edge (~ Svelte p-3).
@@ -223,31 +254,41 @@ func (r *Renderer) layoutDeck(gtx layout.Context) layout.Dimensions {
 
 	gap := gtx.Dp(unit.Dp(tileGapDp))
 
-	// Capture the deck grid geometry for Context_Menu positioning (bug fix).
-	// gtx.Constraints.Max is the full deck area in the SAME coordinate space
-	// layoutContextMenu / layoutMenuPanel offset within. Recording it (plus
-	// rows/cols/gap) here lets layoutContextMenu compute the clicked slot's
-	// deck-space rectangle from Menu.Slot so the panel anchors under the slot
-	// the user right-clicked / long-pressed instead of at the top-left.
-	r.deck.deckSize = gtx.Constraints.Max
-	r.deck.deckRows = rows
-	r.deck.deckCols = cols
-	r.deck.deckGap = gap
+	// Enhancement 1: pad the whole grid away from the window edges. The
+	// background above already filled the FULL deck area (window edges
+	// included), so only the tiles are inset — the deckBg shows through the
+	// padding band. The grid is laid out INSIDE this inset; the outer-area gtx
+	// (used below for layoutContextMenu) is preserved so the menu backdrop
+	// still covers the whole deck and the panel offset math (slotOrigin, which
+	// adds deckInset) lands in the outer coordinate space.
+	inset := layout.UniformInset(unit.Dp(deckOuterInsetDp))
+	dims := inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		// Capture the deck grid geometry for Context_Menu positioning here,
+		// INSIDE the inset, so gtx.Constraints.Max is the inner (post-inset)
+		// content area. slotOrigin adds deckInset back to return outer-space
+		// coordinates. See slotOrigin / layoutMenuPanel and the deckState
+		// field comments for the full math.
+		r.deck.deckSize = gtx.Constraints.Max
+		r.deck.deckRows = rows
+		r.deck.deckCols = cols
+		r.deck.deckGap = gap
+		r.deck.deckInset = gtx.Dp(unit.Dp(deckOuterInsetDp))
 
-	// Build R vertical children (rows). Each row is a horizontal Flex of C
-	// cells. Both axes use Flexed(1, ...) so cells share the space equally.
-	rowChildren := make([]layout.FlexChild, 0, rows*2-1)
-	for rIdx := 0; rIdx < rows; rIdx++ {
-		rIdx := rIdx
-		if rIdx > 0 {
-			rowChildren = append(rowChildren, layout.Rigid(layout.Spacer{Height: unit.Dp(tileGapDp)}.Layout))
+		// Build R vertical children (rows). Each row is a horizontal Flex of C
+		// cells. Both axes use Flexed(1, ...) so cells share the space equally.
+		rowChildren := make([]layout.FlexChild, 0, rows*2-1)
+		for rIdx := 0; rIdx < rows; rIdx++ {
+			rIdx := rIdx
+			if rIdx > 0 {
+				rowChildren = append(rowChildren, layout.Rigid(layout.Spacer{Height: unit.Dp(tileGapDp)}.Layout))
+			}
+			rowChildren = append(rowChildren, layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+				return r.layoutDeckRow(gtx, rIdx, cols, prevSlot, nextSlot, gap)
+			}))
 		}
-		rowChildren = append(rowChildren, layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-			return r.layoutDeckRow(gtx, rIdx, cols, prevSlot, nextSlot, gap)
-		}))
-	}
 
-	dims := layout.Flex{Axis: layout.Vertical}.Layout(gtx, rowChildren...)
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx, rowChildren...)
+	})
 
 	// Flash scheduling (Requirement 5.2): a tap sets Flash[id] = now+150ms and
 	// layoutButtonTile fills the tile with the highlight while the deadline is
@@ -481,9 +522,18 @@ func (r *Renderer) detectMenuGesture(gtx layout.Context, slot int, btnID string,
 	tag := r.menuTag(slot)
 
 	// Declare the pointer input area over the tile bounds so events route to tag.
+	// The area is declared in PASS-THROUGH mode (pointer.PassOp) so it does NOT
+	// block the primary tap from reaching the widget.Clickable beneath it: in
+	// v0.10.2 an overlapping input area otherwise consumes pointer events and
+	// starves the Clickable underneath, which broke tap-to-run on button tiles.
+	// Pass-through lets this raw area still RECEIVE events (for right-click /
+	// long-press detection via its Filter below) while the Clickable also gets
+	// the primary tap for command execution.
+	pass := pointer.PassOp{}.Push(gtx.Ops)
 	area := clip.Rect{Max: size}.Push(gtx.Ops)
 	event.Op(gtx.Ops, tag)
 	area.Pop()
+	pass.Pop()
 
 	tol := float32(gtx.Dp(unit.Dp(longPressMoveTolerance)))
 
@@ -623,12 +673,74 @@ func (r *Renderer) layoutTileLabel(gtx layout.Context, label string, fg color.NR
 		Right:  unit.Dp(tileInsetDp),
 	}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-			lbl := material.Label(r.th, unit.Sp(sizeSp), label)
-			lbl.Color = fg
-			lbl.Alignment = text.Middle
-			return lbl.Layout(gtx)
+			// Enhancement 5: draw the label semi-bold with a dark shadow/outline
+			// so it stays readable on any tile color or background image.
+			return r.drawShadowedLabel(gtx, sizeSp, fg, label)
 		})
 	})
+}
+
+// labelShadow is the color used for the offset shadow/outline copies drawn
+// behind the main tile label text (Enhancement 5). Black at ~0.8 alpha so the
+// outline reads clearly over both light and dark tile fills / images.
+var labelShadow = color.NRGBA{R: 0, G: 0, B: 0, A: 0xcc}
+
+// drawShadowedLabel renders txt centered at sizeSp in a SEMI-BOLD weight with a
+// dark drop-shadow/outline behind it, so the label stands out on any background
+// (Enhancement 5, subtask 6.1). It is the deck's replacement for a plain
+// material.Label call inside layoutTileLabel (6.2) and can be reused by the
+// config LEFT preview tile labels (6.3) — that lives in config.go, which a
+// concurrent task edits; this helper is a method on *Renderer in the ui package
+// so config.go can call r.drawShadowedLabel(...) directly once that task lands.
+//
+// Weight: the material.LabelStyle.Font.Weight is set to font.SemiBold. Gio's
+// bundled gofont collection (via material.NewTheme) ships Regular, Medium, and
+// Bold faces but no dedicated SemiBold face; the shaper matches the nearest
+// available weight, which yields a visibly heavier-than-regular face. If a
+// future gofont build drops the intermediate weights and SemiBold collapses to
+// Regular, change this to font.Bold — Bold is always present in the collection.
+//
+// Shadow technique: the same text is drawn as 8 offset copies (the 4 cardinal +
+// 4 diagonal directions, each ±1px via gtx.Dp(unit.Dp(1))) in labelShadow using
+// op.Offset, forming a 1px outline, then the main text is drawn in fg at the
+// true (unoffset) position on top. All copies share identical constraints and
+// text.Middle alignment so they stay perfectly registered and centered. The
+// returned Dimensions are the main (true-position) label's, so callers size the
+// label as if the shadow were not present.
+func (r *Renderer) drawShadowedLabel(gtx layout.Context, sizeSp float32, fg color.NRGBA, txt string) layout.Dimensions {
+	mk := func(col color.NRGBA) material.LabelStyle {
+		lbl := material.Label(r.th, unit.Sp(sizeSp), txt)
+		lbl.Color = col
+		lbl.Alignment = text.Middle
+		// Semi-bold weight (see doc comment re: gofont fallback behavior).
+		lbl.Font.Weight = font.SemiBold
+		return lbl
+	}
+
+	off1 := gtx.Dp(unit.Dp(1))
+	off2 := gtx.Dp(unit.Dp(2))
+	// Two outline rings (inner 1px + outer 2px, each 8-direction) so the shadow
+	// reads ~2.5x heavier while staying solid with no gaps at the larger radius.
+	offsets := []image.Point{
+		{X: -off1, Y: -off1}, {X: 0, Y: -off1}, {X: off1, Y: -off1},
+		{X: -off1, Y: 0}, {X: off1, Y: 0},
+		{X: -off1, Y: off1}, {X: 0, Y: off1}, {X: off1, Y: off1},
+		{X: -off2, Y: -off2}, {X: 0, Y: -off2}, {X: off2, Y: -off2},
+		{X: -off2, Y: 0}, {X: off2, Y: 0},
+		{X: -off2, Y: off2}, {X: 0, Y: off2}, {X: off2, Y: off2},
+	}
+
+	// Draw the shadow copies first (behind), each in its own offset stack so the
+	// offset does not accumulate and the main text layout constraints are shared.
+	shadow := mk(labelShadow)
+	for _, o := range offsets {
+		stack := op.Offset(o).Push(gtx.Ops)
+		shadow.Layout(gtx)
+		stack.Pop()
+	}
+
+	// Draw the main text on top at the true position; its dims are returned.
+	return mk(fg).Layout(gtx)
 }
 
 // layoutPrevTile renders the Prev Page control and handles its taps (task 9.2,
@@ -694,30 +806,33 @@ func (r *Renderer) onNextPageTapped() {
 	r.w.Invalidate()
 }
 
+// navIndicatorBandDp is the fixed height of the reserved bottom band that holds
+// the "current / total" page indicator on the Next tile (Enhancement 6). The
+// SAME band is reserved on the Prev tile (rendered empty) so that the
+// label+arrow group above it is centered over the identical remaining height on
+// both tiles and the "Prev Page" / "Next Page" labels stay vertically aligned.
+const navIndicatorBandDp = 18
+
 // drawNavTile renders a pagination control's appearance (Requirement 6.2): a
 // distinct dark tile with the label ("Prev Page"/"Next Page") on top and the
 // glyph (◀ / ▶) directly BELOW it as a vertical stack, plus — for the Next tile
-// — the "current / total" page indicator pinned in its own band at the BOTTOM
-// edge of the tile. This is drawing only; the click behavior lives in
-// layoutPrevTile/layoutNextTile.
+// — the "current / total" page indicator in its OWN reserved band, clearly
+// SEPARATED at the very bottom of the tile. This is drawing only; the click
+// behavior lives in layoutPrevTile/layoutNextTile.
 //
-// Layout (alignment fix, per the user's manual-verification feedback):
-//   - The label sits ON TOP with the arrow glyph CENTERED BELOW it (a vertical
-//     column), not beside it, so both tiles read as "Prev Page / ◀" and
-//     "Next Page / ▶" stacked. Both tiles use this identical column so they stay
-//     symmetric.
-//   - The label+arrow column is CENTERED over the FULL tile height on BOTH tiles
-//     (identical constraints), and the "current / total" indicator is drawn as a
-//     stacked OVERLAY pinned to the bottom edge (layout.S) that does NOT reduce
-//     the centered group's height. This replaces the earlier flexed-spacer
-//     scheme, where the Next tile reserved a rigid indicator band at the bottom
-//     while Prev did not: the two tiles then centered their label+arrow over
-//     DIFFERENT heights (Next's was shortened by the band), so "Prev Page" and
-//     "Next Page" did not line up. With the overlay approach both tiles center
-//     over the same full height, so the labels sit at the same y; only the Next
-//     tile adds a bottom-overlaid indicator on top. The indicator is small (11sp)
-//     and hugs the very bottom, so on realistic tile sizes it does not touch the
-//     centered arrow.
+// Layout (Enhancement 6 — separated page count):
+//   - A vertical layout.Flex splits the tile into (a) a Flexed(1) region that
+//     centers the label+arrow group, and (b) a Rigid bottom band of fixed
+//     height (navIndicatorBandDp) that holds the indicator centered with clear
+//     top spacing.
+//   - The bottom band is reserved on BOTH tiles. The Next tile fills it with the
+//     "current / total" count; the Prev tile passes an empty indicator so the
+//     band renders empty but still occupies the same height. Because both tiles
+//     reserve the identical band, the Flexed(1) label+arrow regions have the
+//     same height on both, so "Prev Page" and "Next Page" line up vertically.
+//   - This REPLACES the earlier Stack overlay approach for the indicator while
+//     keeping the tile's rounded background/border and the label-on-top /
+//     arrow-below arrangement and colors (navLabel, navGlyph, indicatorFg).
 func (r *Renderer) drawNavTile(gtx layout.Context, glyph, label, indicator string) layout.Dimensions {
 	size := gtx.Constraints.Max
 	radius := gtx.Dp(unit.Dp(tileRadiusDp))
@@ -734,13 +849,11 @@ func (r *Renderer) drawNavTile(gtx layout.Context, glyph, label, indicator strin
 		Left:   unit.Dp(tileInsetDp),
 		Right:  unit.Dp(tileInsetDp),
 	}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-			// Expanded: the label+arrow column, centered over the FULL tile
-			// height. Identical on both tiles, so the labels line up. Using
-			// Expanded (not Stacked) makes this child fill the stack, and the
-			// stack's overall size is driven by it, so the bottom-pinned
-			// indicator overlay below cannot change where this group centers.
-			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+			// (a) Flexed(1): the label+arrow group, centered over the region
+			// ABOVE the reserved bottom band. Identical on both tiles, so the
+			// labels align vertically.
+			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 				return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return layout.Flex{Axis: layout.Vertical, Alignment: layout.Middle}.Layout(gtx,
 						// Label on top.
@@ -762,16 +875,19 @@ func (r *Renderer) drawNavTile(gtx layout.Context, glyph, label, indicator strin
 					)
 				})
 			}),
-			// Stacked overlay: the "current / total" indicator pinned to the
-			// bottom edge (layout.S). Empty on the Prev tile (zero-size, draws
-			// nothing), present on the Next tile. As a Stacked child it is
-			// OVERLAID and does not affect the centered group's height, so both
-			// tiles' labels remain aligned.
-			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			// (b) Rigid reserved bottom band, fixed height, holding the indicator
+			// centered. Reserved (occupying the same height) on BOTH tiles so the
+			// label+arrow groups stay aligned; the Prev tile passes indicator ""
+			// so the band is present but empty.
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				band := gtx.Dp(unit.Dp(navIndicatorBandDp))
+				gtx.Constraints.Min.Y = band
+				gtx.Constraints.Max.Y = band
+				gtx.Constraints.Min.X = gtx.Constraints.Max.X
 				if indicator == "" {
-					return layout.Dimensions{}
+					return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, band)}
 				}
-				return layout.S.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					ind := material.Label(r.th, unit.Sp(11), indicator)
 					ind.Color = indicatorFg
 					ind.Alignment = text.Middle
@@ -953,6 +1069,13 @@ func (r *Renderer) layoutContextMenu(gtx layout.Context) layout.Dimensions {
 			r.menuPaste()
 		}
 	}
+	// Fullscreen toggle (Enhancement 7): flip the window mode and close the
+	// menu. This item is on every context menu so the user can return to
+	// windowed mode when the header is hidden in full-screen.
+	for r.deck.fsMenuBtn.Clicked(gtx) {
+		r.toggleFullscreen()
+		r.closeMenu()
+	}
 	// Drain the backdrop click LAST so it only fires when the click was outside
 	// the panel (the panel's item areas, laid out on top, consume in-panel
 	// clicks). Any drained backdrop click dismisses the menu (Requirement 8.9).
@@ -981,22 +1104,32 @@ func (r *Renderer) layoutContextMenu(gtx layout.Context) layout.Dimensions {
 }
 
 // slotOrigin returns the top-left corner of the given slot's tile in the deck's
-// coordinate space (the space layoutMenuPanel offsets within), computed from the
-// grid geometry captured in layoutDeck (bug fix).
+// OUTER coordinate space (the space layoutMenuPanel offsets within via
+// op.Offset, which is the full-area gtx passed to layoutContextMenu), computed
+// from the grid geometry captured in layoutDeck.
 //
-// The grid is an equal-sized rows×cols layout filling deckSize with a fixed gap
-// between adjacent tiles, so each cell's width/height and origin are a pure
-// function of its row/col:
+// The grid is an equal-sized rows×cols layout filling the INNER (post-inset)
+// deckSize with a fixed gap between adjacent tiles, so each cell's width/height
+// and inner origin are a pure function of its row/col:
 //
 //	cellW = (deckW - (cols-1)*gap) / cols
 //	cellH = (deckH - (rows-1)*gap) / rows
-//	originX = col*(cellW+gap)
-//	originY = row*(cellH+gap)
+//	innerX = col*(cellW+gap)
+//	innerY = row*(cellH+gap)
 //
-// This matches the nested Flex(1) layout in layoutDeck/layoutDeckRow (equal
-// flexed cells separated by tileGapDp spacers). It returns ok=false when the
-// geometry has not been captured yet or the slot is out of range, so the caller
-// can fall back to the raw (local) position.
+// Enhancement 1: the whole grid is laid out inside layout.UniformInset(16dp),
+// so a tile's on-screen (outer) origin is its inner origin shifted right/down by
+// deckInset (the inset in px). We therefore ADD deckInset to both axes:
+//
+//	originX = deckInset + col*(cellW+gap)
+//	originY = deckInset + row*(cellH+gap)
+//
+// Since layoutContextMenu / layoutMenuPanel run on the FULL-area gtx (outside the
+// inset), this puts the panel anchor under the actual clicked slot. This matches
+// the nested Flex(1) layout in layoutDeck/layoutDeckRow (equal flexed cells
+// separated by tileGapDp spacers, all inside the inset). It returns ok=false
+// when the geometry has not been captured yet or the slot is out of range, so
+// the caller can fall back to the raw (local) position.
 func (r *Renderer) slotOrigin(slot int) (image.Point, bool) {
 	cols := r.deck.deckCols
 	rows := r.deck.deckRows
@@ -1004,13 +1137,14 @@ func (r *Renderer) slotOrigin(slot int) (image.Point, bool) {
 		return image.Point{}, false
 	}
 	gap := r.deck.deckGap
+	inset := r.deck.deckInset
 	deckW := r.deck.deckSize.X
 	deckH := r.deck.deckSize.Y
 	cellW := (deckW - (cols-1)*gap) / cols
 	cellH := (deckH - (rows-1)*gap) / rows
 	col := slot % cols
 	row := slot / cols
-	return image.Pt(col*(cellW+gap), row*(cellH+gap)), true
+	return image.Pt(inset+col*(cellW+gap), inset+row*(cellH+gap)), true
 }
 
 // layoutMenuPanel positions and draws the menu panel anchored to the clicked
@@ -1030,7 +1164,8 @@ func (r *Renderer) layoutMenuPanel(gtx layout.Context) layout.Dimensions {
 	panelW := gtx.Dp(unit.Dp(menuWidthDp))
 	itemH := gtx.Dp(unit.Dp(menuItemHeightDp))
 	pad := gtx.Dp(unit.Dp(menuPadDp))
-	panelH := itemH*3 + pad*2
+	// Enhancement 7: reserve room for 4 items (Edit, Copy, Paste, Fullscreen).
+	panelH := itemH*4 + pad*2
 
 	// Anchor to the clicked slot's deck-space origin, plus the local pointer
 	// offset within that tile, so the menu appears at/near the actual click.
@@ -1081,6 +1216,17 @@ func (r *Renderer) layoutMenuPanel(gtx layout.Context) layout.Dimensions {
 			}),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return r.layoutMenuItem(gtx, &r.deck.pasteMenuBtn, "Paste", pasteAvailable)
+			}),
+			// Enhancement 7: Fullscreen / Exit Fullscreen toggle. The label
+			// reflects the current mode (like the header button) and it is
+			// always enabled — this is how the user exits full-screen when the
+			// header is hidden.
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				label := "Fullscreen"
+				if r.state.Fullscreen {
+					label = "Exit Fullscreen"
+				}
+				return r.layoutMenuItem(gtx, &r.deck.fsMenuBtn, label, true)
 			}),
 		)
 	})

@@ -62,8 +62,10 @@ type Renderer struct {
 	configBtn widget.Clickable
 
 	// fsBtn is the on-screen full-screen toggle control in the header
-	// (Requirements 7.4, 7.5). Because the header is always drawn, this control
-	// stays visible in full-screen so the user can return to windowed mode.
+	// (Requirements 7.4, 7.5). Enhancement 7: the header is now HIDDEN while
+	// full-screen (see layout), so this control is not visible in full-screen.
+	// The user returns to windowed mode via F11 (handleKeys) or the context
+	// menu's Fullscreen / Exit Fullscreen item (deck.go layoutMenuPanel).
 	fsBtn widget.Clickable
 
 	// cfg holds the Config_View's Gio widget state (task 14.x, defined in
@@ -147,19 +149,28 @@ func (r *Renderer) layout(gtx layout.Context) layout.Dimensions {
 		r.toggleFullscreen()
 	}
 
-	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+	// Enhancement 7: hide the header while full-screen so the active view fills
+	// the whole window. The header (Deck/Config/Exit-Fullscreen buttons) is only
+	// laid out when NOT full-screen. The header click widgets are still drained
+	// above regardless of full-screen, so state stays consistent even when the
+	// header is not painted (the clickables simply receive no events). The user
+	// returns to windowed via F11 (handleKeys) or the context menu's Fullscreen
+	// item (see deck.go layoutMenuPanel).
+	children := make([]layout.FlexChild, 0, 2)
+	if !r.state.Fullscreen {
+		children = append(children, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return r.layoutHeader(gtx)
-		}),
-		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-			switch r.state.View {
-			case ViewConfig:
-				return r.layoutConfig(gtx)
-			default:
-				return r.layoutDeck(gtx)
-			}
-		}),
-	)
+		}))
+	}
+	children = append(children, layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+		switch r.state.View {
+		case ViewConfig:
+			return r.layoutConfig(gtx)
+		default:
+			return r.layoutDeck(gtx)
+		}
+	}))
+	return layout.Flex{Axis: layout.Vertical}.Layout(gtx, children...)
 }
 
 // switchView changes the active top-level view (Requirement 1.5). Switching
@@ -213,8 +224,11 @@ func (r *Renderer) handleKeys(gtx layout.Context) {
 // full-screen and windowed mode (Requirements 7.2, 7.4). Gio's full-screen
 // window mode is borderless, so the title bar is hidden while full-screen
 // (Requirement 7.3); returning to Windowed restores it. Both F11 and the
-// on-screen control call this, and because the header (with the control) is
-// always drawn, the user can always return to windowed mode (Requirement 7.5).
+// on-screen control call this. Enhancement 7: the header (with the on-screen
+// control) is HIDDEN while full-screen (see layout), so the user returns to
+// windowed mode via F11 or the context menu's Fullscreen / Exit Fullscreen item
+// (deck.go layoutMenuPanel), which is available on every context menu
+// (Requirement 7.5).
 func (r *Renderer) toggleFullscreen() {
 	r.state.Fullscreen = !r.state.Fullscreen
 	if r.state.Fullscreen {
@@ -236,9 +250,12 @@ func (r *Renderer) toggleFullscreen() {
 	}
 }
 
-// layoutHeader draws the persistent top bar with the "Deck" and "Config"
-// buttons. The button for the active view is drawn in the theme's contrast
-// color so the current view is obvious.
+// layoutHeader draws the top bar with the "Deck"/"Config" buttons and the
+// full-screen control. The button for the active view is drawn in the theme's
+// contrast color so the current view is obvious. Enhancement 7: the header is
+// only laid out when NOT full-screen (see layout); while full-screen it is
+// hidden so the active view fills the whole window, and the user returns to
+// windowed mode via F11 or the context menu's Fullscreen / Exit Fullscreen item.
 func (r *Renderer) layoutHeader(gtx layout.Context) layout.Dimensions {
 	return layout.Inset{
 		Top:    unit.Dp(8),

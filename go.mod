@@ -4,6 +4,7 @@ go 1.27.0
 
 require (
 	gioui.org v0.10.2
+	gioui.org/x v0.10.2
 	github.com/leanovate/gopter v0.2.11
 	github.com/sqweek/dialog v0.0.0-20260123140253-64c163d53aac
 )

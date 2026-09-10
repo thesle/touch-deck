@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=TouchDeck
+Comment=Touch-screen deck of scriptable buttons
+Exec=touchdeck
+Icon=touchdeck
+Categories=Utility;
+Terminal=false

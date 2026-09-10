@@ -1101,7 +1101,11 @@ func (r *Renderer) layoutConfigPreviewTile(gtx layout.Context, slot int, btn cor
 	)
 	switch {
 	case selected:
-		fill = cfgSelectedBg
+		// Selection is indicated ONLY by a thicker blue border (Enhancement 4a);
+		// the fill/backdrop keeps the REAL live-edited tile color (resolved just
+		// below via the `selected` backdrop path) instead of the old cfgSelectedBg
+		// tint, so the preview shows the actual color the user is editing.
+		fill = cfgTileFillColor(r.state.Editor.BgColor)
 		border = cfgSelectedBorder
 		labelText = previewLabel(r.state.Editor.Label)
 		labelFg = cfgTileFontColor(r.state.Editor.FontColor)
@@ -1146,7 +1150,14 @@ func (r *Renderer) layoutConfigPreviewTile(gtx layout.Context, slot int, btn cor
 		paint.Fill(gtx.Ops, fill)
 	}
 
-	strokeRRect(gtx, size, radius, gtx.Dp(unit.Dp(tileBorderDp)), border)
+	// Selected tile: a thicker (8dp) blue border is the ONLY selection indicator
+	// now (Enhancement 4a). Non-selected tiles keep the thin tileBorderDp border
+	// in their normal border color.
+	borderWidth := gtx.Dp(unit.Dp(tileBorderDp))
+	if selected {
+		borderWidth = gtx.Dp(unit.Dp(8))
+	}
+	strokeRRect(gtx, size, radius, borderWidth, border)
 
 	r.layoutConfigTileLabel(gtx, labelText, labelFg, core.FontSizeForOffset(fontSize))
 
@@ -1354,9 +1365,9 @@ func (r *Renderer) layoutEditorForm(gtx layout.Context) layout.Dimensions {
 		{spacerRow(12)},
 		{r.fieldBackgroundImage},
 		{spacerRow(12)},
-		{r.fieldTileColor},
-		{spacerRow(12)},
-		{r.fieldTextColor},
+		// Tile Color + Text Color side by side in one row (Enhancement 2) to
+		// save vertical space; each column keeps its caption-above-picker layout.
+		{r.fieldColorsRow},
 		{spacerRow(12)},
 		{r.fieldFontSize},
 		{spacerRow(16)},
@@ -1364,9 +1375,8 @@ func (r *Renderer) layoutEditorForm(gtx layout.Context) layout.Dimensions {
 		// fields and the Save/Clear actions, matching the Svelte editor order
 		// (arrange controls, then persist). The test-run panel (task 16.3) sits
 		// last so its output area can grow at the bottom of the scrollable form.
-		{r.fieldMoveControls},
-		{spacerRow(12)},
-		{r.fieldCopyPaste},
+		// Move arrows + Copy/Paste merged into one inline row (Enhancement 8).
+		{r.fieldMoveCopyPaste},
 		{spacerRow(16)},
 		{r.editorActions},
 		{spacerRow(16)},
@@ -1446,6 +1456,24 @@ func (r *Renderer) fieldCommandEditor(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min.Y = gtx.Dp(unit.Dp(72))
 				return ed.Layout(gtx)
 			})
+		}),
+	)
+}
+
+// fieldColorsRow lays the Tile Color and Text Color pickers SIDE BY SIDE in a
+// single horizontal row to save vertical space (Enhancement 2). Each column is a
+// Flexed(1) share of the width and keeps its existing caption-above-picker
+// vertical structure (fieldTileColor / fieldTextColor), with a small horizontal
+// spacer between the two columns. Rendering still goes through cfgTheme via those
+// helpers. The pickers' internal widgets carry no click-drain concerns here.
+func (r *Renderer) fieldColorsRow(gtx layout.Context) layout.Dimensions {
+	return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+			return r.fieldTileColor(gtx)
+		}),
+		layout.Rigid(layout.Spacer{Width: unit.Dp(12)}.Layout),
+		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+			return r.fieldTextColor(gtx)
 		}),
 	)
 }
@@ -1923,12 +1951,16 @@ func (r *Renderer) moveSelected(dir core.Direction) {
 	r.selectSlot(newSel)
 }
 
-// fieldMoveControls renders the "Move" control row: a caption above the four
-// arrow buttons (← ↑ ↓ →) that call moveSelected (task 16.1, Requirement 11.1).
-// The arrows' Clicked() events were already drained at the TOP of
-// layoutEditorForm (drain-before-layout), so this only paints them. All are
-// rendered through cfgTheme so they are readable on the dark pane.
-func (r *Renderer) fieldMoveControls(gtx layout.Context) layout.Dimensions {
+// fieldMoveCopyPaste merges the move arrows and the copy/paste controls into a
+// SINGLE horizontal row (Enhancement 8): [← ↑ ↓ →]  [Copy Settings] [Paste
+// Settings]. It reuses the same rendering (arrows through cfgTheme, copy/paste
+// with the paste-unavailable greying) as the former fieldMoveControls /
+// fieldCopyPaste, laying the arrows group and the copy/paste group on one
+// layout.Flex{Axis: Horizontal} separated by a 24dp spacer. The buttons'
+// Clicked() events are still drained at the TOP of layoutEditorForm
+// (drain-before-layout), so this only paints them. The "Move" caption is dropped
+// to keep the single row compact; the arrows remain self-explanatory.
+func (r *Renderer) fieldMoveCopyPaste(gtx layout.Context) layout.Dimensions {
 	th := r.ensureCfgTheme()
 	arrow := func(gtx layout.Context, btn *widget.Clickable, label string) layout.Dimensions {
 		b := material.Button(th, btn, label)
@@ -1936,29 +1968,49 @@ func (r *Renderer) fieldMoveControls(gtx layout.Context) layout.Dimensions {
 		b.TextSize = unit.Sp(16)
 		return b.Layout(gtx)
 	}
-	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+	pasteAvailable := r.state.Clipboard != nil
+	return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
+		// Arrows group: ← ↑ ↓ →
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return r.fieldCaption(gtx, "Move")
+			return arrow(gtx, &r.cfg.moveLeft, "←")
 		}),
-		layout.Rigid(layout.Spacer{Height: unit.Dp(4)}.Layout),
+		layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return arrow(gtx, &r.cfg.moveLeft, "←")
-				}),
-				layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return arrow(gtx, &r.cfg.moveUp, "↑")
-				}),
-				layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return arrow(gtx, &r.cfg.moveDown, "↓")
-				}),
-				layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return arrow(gtx, &r.cfg.moveRight, "→")
-				}),
-			)
+			return arrow(gtx, &r.cfg.moveUp, "↑")
+		}),
+		layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return arrow(gtx, &r.cfg.moveDown, "↓")
+		}),
+		layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return arrow(gtx, &r.cfg.moveRight, "→")
+		}),
+		// Gap between the two groups.
+		layout.Rigid(layout.Spacer{Width: unit.Dp(24)}.Layout),
+		// Copy/paste group: [Copy Settings] [Paste Settings]
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			b := material.Button(th, &r.cfg.copyBtn, "Copy Settings")
+			b.Inset = layout.UniformInset(unit.Dp(8))
+			b.TextSize = unit.Sp(14)
+			b.Background = cfgFieldBg
+			b.Color = th.Palette.Fg
+			return b.Layout(gtx)
+		}),
+		layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			b := material.Button(th, &r.cfg.pasteBtn, "Paste Settings")
+			b.Inset = layout.UniformInset(unit.Dp(8))
+			b.TextSize = unit.Sp(14)
+			if pasteAvailable {
+				b.Background = cfgFieldBg
+				b.Color = th.Palette.Fg
+			} else {
+				// Empty clipboard: greyed to signal unavailable (Requirement 11.7).
+				b.Background = cfgDisabledBg
+				b.Color = cfgDisabledFg
+			}
+			return b.Layout(gtx)
 		}),
 	)
 }
@@ -2013,43 +2065,6 @@ func (r *Renderer) pasteEditorSettings() {
 	// Push pasted values into the widgets so the form updates, then save.
 	r.syncEditorWidgets()
 	r.saveSelectedSlot()
-}
-
-// fieldCopyPaste renders the "Copy Settings" / "Paste Settings" row (task 16.2,
-// Requirements 11.5–11.7). The buttons' Clicked() events were already drained at
-// the TOP of layoutEditorForm (drain-before-layout), so this only paints them.
-// Paste is presented as UNAVAILABLE when the shared clipboard is empty
-// (Requirement 11.7): it is greyed (muted bg/fg) — and its click is also ignored
-// in the drain — so the user can tell there is nothing to paste. Rendered through
-// cfgTheme for readability on the dark pane.
-func (r *Renderer) fieldCopyPaste(gtx layout.Context) layout.Dimensions {
-	th := r.ensureCfgTheme()
-	pasteAvailable := r.state.Clipboard != nil
-	return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			b := material.Button(th, &r.cfg.copyBtn, "Copy Settings")
-			b.Inset = layout.UniformInset(unit.Dp(8))
-			b.TextSize = unit.Sp(14)
-			b.Background = cfgFieldBg
-			b.Color = th.Palette.Fg
-			return b.Layout(gtx)
-		}),
-		layout.Rigid(layout.Spacer{Width: unit.Dp(8)}.Layout),
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			b := material.Button(th, &r.cfg.pasteBtn, "Paste Settings")
-			b.Inset = layout.UniformInset(unit.Dp(8))
-			b.TextSize = unit.Sp(14)
-			if pasteAvailable {
-				b.Background = cfgFieldBg
-				b.Color = th.Palette.Fg
-			} else {
-				// Empty clipboard: greyed to signal unavailable (Requirement 11.7).
-				b.Background = cfgDisabledBg
-				b.Color = cfgDisabledFg
-			}
-			return b.Layout(gtx)
-		}),
-	)
 }
 
 // --- Task 16.3: Test-run panel (Requirement 12) ---

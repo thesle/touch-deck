@@ -1,4 +1,4 @@
-.PHONY: all build run clean install uninstall
+.PHONY: all build build-windows run clean install uninstall
 
 # Install locations (override with e.g. `make install PREFIX=/usr/local`).
 PREFIX ?= $(HOME)/.local
@@ -13,12 +13,20 @@ build:
 	go build -o build/bin/touchdeck .
 	@echo "TouchDeck binary created at: build/bin/touchdeck"
 
+# Cross-compile a Windows binary from Linux. Gio and sqweek/dialog are pure Go
+# on Windows, so no cgo or mingw toolchain is needed. `-H windowsgui` builds a
+# GUI-subsystem exe so no console window opens alongside the app.
+build-windows:
+	@echo "--- Building TouchDeck for Windows (amd64) ---"
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-H windowsgui" -o build/bin/touchdeck.exe .
+	@echo "TouchDeck binary created at: build/bin/touchdeck.exe"
+
 run:
 	go run .
 
 clean:
 	@echo "--- Cleaning Build Output ---"
-	rm -rf build/bin/touchdeck
+	rm -rf build/bin/touchdeck build/bin/touchdeck.exe
 
 # --- Desktop integration / app icon --------------------------------------
 # WHY the .desktop + hicolor PNG mechanism:

@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -81,6 +80,7 @@ func (b *Backend) LoadConfig() (Config, error) {
 
 	// If config doesn't exist, return a default one
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		cmds := platformDefaultCommands()
 		defaultConfig := Config{
 			Rows: 2,
 			Cols: 4,
@@ -91,19 +91,19 @@ func (b *Backend) LoadConfig() (Config, error) {
 						{
 							ID:      "btn_default_1",
 							Label:   "Say Hello 👋",
-							Command: "notify-send 'TouchDeck' 'Hello! Your TouchDeck is working beautifully.'",
+							Command: cmds.Hello,
 							Order:   0,
 						},
 						{
 							ID:      "btn_default_2",
 							Label:   "Open GitHub 🌐",
-							Command: "xdg-open 'https://github.com'",
+							Command: cmds.OpenGitHub,
 							Order:   1,
 						},
 						{
 							ID:      "btn_default_3",
 							Label:   "System Date 🕒",
-							Command: "notify-send 'Current Date' \"$(date)\"",
+							Command: cmds.Date,
 							Order:   2,
 						},
 					},
@@ -227,10 +227,12 @@ func (b *Backend) ImagesDir() (string, error) {
 // --- Command_Runner (implemented by task 3.1) ---
 
 // RunCommandAsync executes a command in the background (fire-and-forget). It
-// runs the command through `bash -c`, starts it, and reaps it in a goroutine so
-// the UI never blocks; only the start error is returned to the caller.
+// runs the command through the platform shell (`bash -c` on Linux/Unix,
+// `cmd.exe /d /s /c` on Windows; see shell*.go), starts it, and reaps it in a
+// goroutine so the UI never blocks; only the start error is returned to the
+// caller.
 func (b *Backend) RunCommandAsync(command string) error {
-	cmd := exec.Command("bash", "-c", command)
+	cmd := shellCommand(context.Background(), command)
 	err := cmd.Start()
 	if err != nil {
 		return err
@@ -242,14 +244,15 @@ func (b *Backend) RunCommandAsync(command string) error {
 }
 
 // RunCommandSync executes a command and waits for its combined output (useful
-// for testing scripts in Config). It runs through `bash -c` under a 10 second
+// for testing scripts in Config). It runs through the platform shell (`bash -c`
+// on Linux/Unix, `cmd.exe /d /s /c` on Windows; see shell*.go) under a 10 second
 // context timeout; on deadline it returns a timeout error, otherwise it returns
 // the combined stdout/stderr and any run error.
 func (b *Backend) RunCommandSync(command string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "bash", "-c", command)
+	cmd := shellCommand(ctx, command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {

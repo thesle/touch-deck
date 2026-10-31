@@ -42,6 +42,8 @@ import (
 	"strings"
 	"sync"
 
+	"gioui.org/io/event"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -137,8 +139,14 @@ type configState struct {
 	// are harmless (never laid out) so no pruning is needed.
 	imgRowClicks map[string]*widget.Clickable
 
-	// imgList is the scroll state for the existing-images list.
-	imgList widget.List
+	// formList is the scroll state of the whole editor form (the right-pane
+	// material.List); the existing-images rows are a plain Flex inside it.
+	formList widget.List
+
+	// paneScroll owns mouse-wheel/touchpad scrolling of the editor form. Its
+	// address is the event tag of a pass-through input area covering the whole
+	// right pane; see drainPaneScroll and registerPaneScroll.
+	paneScroll paneScrollState
 
 	// existingImages caches the result of Backend.ListConfigImages so the images
 	// directory is not re-read every frame (it would be a wasteful syscall per
@@ -1283,7 +1291,11 @@ func (r *Renderer) layoutConfigTileLabel(gtx layout.Context, label string, fg co
 func (r *Renderer) layoutConfigRight(gtx layout.Context) layout.Dimensions {
 	fillBackground(gtx, cfgRightBg)
 
-	return layout.Inset{
+	// Apply wheel input received since the last frame before the form list is
+	// laid out, so the new offset takes effect (and is clamped) this frame.
+	r.drainPaneScroll(gtx)
+
+	dims := layout.Inset{
 		Top:    unit.Dp(16),
 		Bottom: unit.Dp(16),
 		Left:   unit.Dp(16),
@@ -1301,6 +1313,77 @@ func (r *Renderer) layoutConfigRight(gtx layout.Context) layout.Dimensions {
 		// A slot is selected: render the editor form (task 15.1).
 		return r.layoutEditorForm(gtx)
 	})
+
+	// Register the pane-wide wheel area AFTER the form so it is topmost and
+	// sees every wheel event over the right pane, including its inset margins.
+	if r.state.SelectedSlot != nil {
+		r.registerPaneScroll(gtx, gtx.Constraints.Max)
+	}
+	return dims
+}
+
+// paneScrollState is the event tag and sub-pixel remainder of the right pane's
+// wheel handler.
+type paneScrollState struct {
+	// accum holds the fractional part of wheel deltas not yet applied, so
+	// high-resolution wheels and touchpads that send sub-pixel deltas still
+	// scroll.
+	accum float32
+}
+
+// paneScrollRange is the scroll range the pane-wide handler claims in each
+// direction (same magnitude as layout.List's internal "infinite" range).
+// layout.List clamps Position.Offset at both ends during layout, so claiming
+// more than the form can actually scroll is harmless.
+const paneScrollRange = 1_000_000
+
+// drainPaneScroll applies the vertical wheel/touchpad scroll received by the
+// pane-wide input area (registerPaneScroll) directly to the editor form list.
+//
+// Why this exists: the form used to scroll only through layout.List's own
+// gesture.Scroll, which only receives wheel events whose position falls inside
+// the list's clip rect and accepts only the range computed from the previous
+// frame. On Windows, Gio delivers WM_POINTERWHEEL deltas of ±120 px per notch
+// (or arbitrary fractions from precision touchpads) at a screen point converted
+// with ScreenToClient, so the event stream differs from X11's ±10 px button
+// 4/5 events; wheel input that lands outside the list rect (e.g. in the 16 dp
+// pane margins) was silently dropped. Owning the wheel at pane level removes
+// the dependency on the hit position and on last frame's range, on every
+// platform. Positive Scroll.Y scrolls down, the same sign layout.List uses.
+func (r *Renderer) drainPaneScroll(gtx layout.Context) {
+	for {
+		ev, ok := gtx.Event(pointer.Filter{
+			Target:  &r.cfg.paneScroll,
+			Kinds:   pointer.Scroll,
+			ScrollY: pointer.ScrollRange{Min: -paneScrollRange, Max: paneScrollRange},
+		})
+		if !ok {
+			break
+		}
+		if e, ok := ev.(pointer.Event); ok {
+			r.cfg.paneScroll.accum += e.Scroll.Y
+		}
+	}
+	if r.state.SelectedSlot == nil {
+		r.cfg.paneScroll.accum = 0
+		return
+	}
+	whole := int(r.cfg.paneScroll.accum)
+	r.cfg.paneScroll.accum -= float32(whole)
+	if whole != 0 {
+		r.cfg.formList.Position.Offset += whole
+	}
+}
+
+// registerPaneScroll declares the pass-through input area for the pane-wide
+// wheel handler over size. PassOp lets clicks, hover and drags still reach the
+// widgets beneath it (same pattern as deck.go detectMenuGesture); the filter in
+// drainPaneScroll asks only for pointer.Scroll and claims only the Y axis, so
+// horizontal (shift+wheel) scroll still reaches single-line editors.
+func (r *Renderer) registerPaneScroll(gtx layout.Context, size image.Point) {
+	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
+	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
+	event.Op(gtx.Ops, &r.cfg.paneScroll)
 }
 
 // layoutEditorForm renders the slot editor form in the right pane when a slot is
@@ -1399,8 +1482,10 @@ func (r *Renderer) layoutEditorForm(gtx layout.Context) layout.Dimensions {
 
 	// The form is a vertical stack of labelled fields, wrapped in a scrollable
 	// material.List so a tall form (image list + all fields) does not clip on a
-	// short window.
-	r.cfg.imgList.Axis = layout.Vertical
+	// short window. Mouse-wheel/touchpad input is handled pane-wide by
+	// drainPaneScroll (see layoutConfigRight); touch drags and the scrollbar
+	// still go through the list itself.
+	r.cfg.formList.Axis = layout.Vertical
 
 	type formRow struct {
 		w layout.Widget
@@ -1437,7 +1522,7 @@ func (r *Renderer) layoutEditorForm(gtx layout.Context) layout.Dimensions {
 		{r.fieldTestRunOutput},
 	}
 
-	return material.List(r.ensureCfgTheme(), &r.cfg.imgList).Layout(gtx, len(rows), func(gtx layout.Context, i int) layout.Dimensions {
+	return material.List(r.ensureCfgTheme(), &r.cfg.formList).Layout(gtx, len(rows), func(gtx layout.Context, i int) layout.Dimensions {
 		return rows[i].w(gtx)
 	})
 }
